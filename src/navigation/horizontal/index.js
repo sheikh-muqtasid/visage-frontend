@@ -1,20 +1,18 @@
 const navigation = () => [
   {
-    title: 'Home',
+    title: 'Dashboard',
     path: '/home',
-    icon: 'tabler:smart-home',
+    icon: 'mdi:home-analytics',
   },
   {
-    title: 'Second Page',
-    path: '/second-page',
-    icon: 'tabler:mail',
+    title: 'Ledger',
+    path: '/ledger',
+    icon: 'mdi:file-document-outline',
   },
   {
-    path: '/acl',
-    action: 'read',
-    subject: 'acl-page',
-    title: 'Access Control',
-    icon: 'tabler:shield',
+    title: 'Menu',
+    path: '/menu',
+    icon: 'mdi:menu',
   }
 ]
 
