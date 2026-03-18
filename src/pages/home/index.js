@@ -8,6 +8,7 @@ import CardContent from '@mui/material/CardContent'
 import Box from '@mui/material/Box'
 import { styled } from '@mui/material/styles'
 import Avatar from '@mui/material/Avatar'
+import NextLink from 'next/link'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -28,6 +29,15 @@ const StatsCard = styled(Card)(({ theme, bgcolor }) => ({
   backgroundColor: bgcolor || theme.palette.background.paper,
   color: theme.palette.common.white,
   height: '100%',
+  cursor: 'pointer',
+  transition: theme.transitions.create(['transform', 'box-shadow'], {
+    duration: theme.transitions.duration.shorter
+  }),
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[8],
+    opacity: 0.9
+  },
   '& .MuiCardContent-root': {
     padding: theme.spacing(4)
   }
@@ -75,80 +85,92 @@ const Home = () => {
       <Grid container spacing={6}>
         {/* Total Products */}
         <Grid item xs={12} md={6}>
-          <StatsCard bgcolor='#7E57C2'>
-            <CardContent>
-              <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                <Icon icon='mdi:package-variant' />
-              </Avatar>
-              <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>{data.totalProducts}</Typography>
-              <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Total Products</Typography>
-            </CardContent>
-          </StatsCard>
+          <Box component={NextLink} href='/products' sx={{ textDecoration: 'none', color: 'inherit' }}>
+            <StatsCard bgcolor='#7E57C2'>
+              <CardContent>
+                <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                  <Icon icon='mdi:package-variant' />
+                </Avatar>
+                <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>{data.totalProducts}</Typography>
+                <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Total Products</Typography>
+              </CardContent>
+            </StatsCard>
+          </Box>
         </Grid>
 
         {/* Today's Orders */}
         <Grid item xs={12} md={6}>
-          <StatsCard bgcolor='#26C6DA'>
-            <CardContent>
-              <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                <Icon icon='mdi:file-document-edit' />
-              </Avatar>
-              <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>{data.todaysOrders}</Typography>
-              <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Today's Orders</Typography>
-            </CardContent>
-          </StatsCard>
+          <Box component={NextLink} href='/orders' sx={{ textDecoration: 'none', color: 'inherit' }}>
+            <StatsCard bgcolor='#26C6DA'>
+              <CardContent>
+                <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                  <Icon icon='mdi:file-document-edit' />
+                </Avatar>
+                <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>{data.todaysOrders}</Typography>
+                <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Today's Orders</Typography>
+              </CardContent>
+            </StatsCard>
+          </Box>
         </Grid>
 
         {/* Today Delivered */}
         <Grid item xs={12} md={6}>
-          <StatsCard bgcolor='#00BFA5'>
-            <CardContent>
-              <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                <Icon icon='mdi:check-circle' />
-              </Avatar>
-              <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>{data.todayDelivered}</Typography>
-              <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Today Delivered</Typography>
-            </CardContent>
-          </StatsCard>
+          <Box component={NextLink} href='/deliveries' sx={{ textDecoration: 'none', color: 'inherit' }}>
+            <StatsCard bgcolor='#00BFA5'>
+              <CardContent>
+                <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                  <Icon icon='mdi:check-circle' />
+                </Avatar>
+                <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>{data.todayDelivered}</Typography>
+                <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Today Delivered</Typography>
+              </CardContent>
+            </StatsCard>
+          </Box>
         </Grid>
 
         {/* Book Now */}
         <Grid item xs={12} md={6}>
-          <StatsCard bgcolor='#5C6BC0'>
-            <CardContent>
-              <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                <Icon icon='mdi:briefcase-plus' />
-              </Avatar>
-              <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>Book Now</Typography>
-              <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Take Order</Typography>
-            </CardContent>
-          </StatsCard>
+          <Box component={NextLink} href='/orders' sx={{ textDecoration: 'none', color: 'inherit' }}>
+            <StatsCard bgcolor='#5C6BC0'>
+              <CardContent>
+                <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                  <Icon icon='mdi:briefcase-plus' />
+                </Avatar>
+                <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>Book Now</Typography>
+                <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Take Order</Typography>
+              </CardContent>
+            </StatsCard>
+          </Box>
         </Grid>
 
         {/* Cash Collected */}
         <Grid item xs={12} md={6}>
-          <StatsCard bgcolor='#E67E22'>
-            <CardContent>
-              <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                <Icon icon='mdi:cash-multiple' />
-              </Avatar>
-              <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>Rs {data.cashCollected}K</Typography>
-              <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Today Cash Collected</Typography>
-            </CardContent>
-          </StatsCard>
+          <Box component={NextLink} href='/ledger' sx={{ textDecoration: 'none', color: 'inherit' }}>
+            <StatsCard bgcolor='#E67E22'>
+              <CardContent>
+                <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                  <Icon icon='mdi:cash-multiple' />
+                </Avatar>
+                <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>Rs {data.cashCollected}K</Typography>
+                <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Today Cash Collected</Typography>
+              </CardContent>
+            </StatsCard>
+          </Box>
         </Grid>
 
         {/* Outstanding */}
         <Grid item xs={12} md={6}>
-          <StatsCard bgcolor='#E74C3C'>
-            <CardContent>
-              <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                <Icon icon='mdi:alert-circle' />
-              </Avatar>
-              <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>Rs {data.outstanding}K</Typography>
-              <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Outstanding (Est)</Typography>
-            </CardContent>
-          </StatsCard>
+          <Box component={NextLink} href='/ledger' sx={{ textDecoration: 'none', color: 'inherit' }}>
+            <StatsCard bgcolor='#E74C3C'>
+              <CardContent>
+                <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                  <Icon icon='mdi:alert-circle' />
+                </Avatar>
+                <Typography variant='h4' sx={{ mb: 1, color: 'inherit' }}>Rs {data.outstanding}K</Typography>
+                <Typography sx={{ color: 'inherit', opacity: 0.8 }}>Outstanding (Est)</Typography>
+              </CardContent>
+            </StatsCard>
+          </Box>
         </Grid>
 
         {/* Daily Sales Chart Placeholder */}
