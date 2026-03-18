@@ -115,7 +115,7 @@ const Home = () => {
 
         {/* Today Delivered */}
         <Grid item xs={12} md={6}>
-          <Box component={NextLink} href='/deliveries' sx={{ textDecoration: 'none', color: 'inherit' }}>
+          <Box component={NextLink} href='/orders?status=DELIVERED' sx={{ textDecoration: 'none', color: 'inherit' }}>
             <StatsCard bgcolor='#00BFA5'>
               <CardContent>
                 <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>
@@ -130,7 +130,7 @@ const Home = () => {
 
         {/* Book Now */}
         <Grid item xs={12} md={6}>
-          <Box component={NextLink} href='/orders' sx={{ textDecoration: 'none', color: 'inherit' }}>
+          <Box component={NextLink} href='/orders/book-now' sx={{ textDecoration: 'none', color: 'inherit' }}>
             <StatsCard bgcolor='#5C6BC0'>
               <CardContent>
                 <Avatar sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.2)' }}>

@@ -66,7 +66,7 @@ const RouteManagement = () => {
       setLoading(true)
       const response = await axios.get('/api/routes')
       if (response.data.success) {
-        setRoutes(response.data.data)
+        setRoutes(Array.isArray(response.data.data.routes) ? response.data.data.routes : [])
       }
     } catch (error) {
       console.error('Failed to fetch routes:', error)
