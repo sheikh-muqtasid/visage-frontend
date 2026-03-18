@@ -137,8 +137,8 @@ const AssignShops = ({ route, onClose }) => {
     const sameWarehouse = (shop.warehouseId?._id || shop.warehouseId) === (route.warehouseId?._id || route.warehouseId)
     
     // Search query filter
-    const matchesSearch = shop.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         shop.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = (shop.shopName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           shop.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     
     return sameWarehouse && matchesSearch
   })

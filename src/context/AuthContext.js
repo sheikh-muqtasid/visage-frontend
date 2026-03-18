@@ -38,6 +38,9 @@ const AuthProvider = ({ children }) => {
           .then(async response => {
             setLoading(false)
             const userData = response.data.userData || response.data
+            if (userData && userData.role) {
+              userData.role = userData.role.toLowerCase()
+            }
             setUser({ ...userData })
           })
           .catch(() => {
@@ -66,7 +69,7 @@ const AuthProvider = ({ children }) => {
           _id: response.data._id,
           fullName: response.data.fullName,
           email: response.data.email,
-          role: response.data.role
+          role: response.data.role?.toLowerCase()
         }
 
         if (params.rememberMe) {
