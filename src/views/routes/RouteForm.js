@@ -88,13 +88,13 @@ const RouteForm = ({ route, isEdit, onClose }) => {
         ])
 
         if (warehousesRes.data.success) {
-          setWarehouses(warehousesRes.data.data)
+          setWarehouses(Array.isArray(warehousesRes.data.data.warehouses) ? warehousesRes.data.data.warehouses : [])
         }
 
-        if (usersRes.data.success) {
-          const allUsers = usersRes.data.data
-          setBookers(allUsers.filter(u => u.role === 'ORDER_BOOKER'))
-          setDeliveryAgents(allUsers.filter(u => u.role === 'DELIVERY_AGENT'))
+        const allUsers = usersRes.data.success ? usersRes.data.data : usersRes.data
+        if (Array.isArray(allUsers)) {
+          setBookers(allUsers.filter(u => u.role === 'ORDER_BOOKER' || u.role === 'admin' || u.role === 'ADMIN'))
+          setDeliveryAgents(allUsers.filter(u => u.role === 'DELIVERY_AGENT' || u.role === 'admin' || u.role === 'ADMIN'))
         }
 
         if (isEdit && route) {
@@ -258,7 +258,7 @@ const RouteForm = ({ route, isEdit, onClose }) => {
                     >
                       {bookers.map(booker => (
                         <MenuItem key={booker._id} value={booker._id}>
-                          {booker.fullName.first} {booker.fullName.last}
+                          {booker.fullName?.first ? `${booker.fullName.first} ${booker.fullName.last}` : (booker.fullName || booker.email || 'No Name')}
                         </MenuItem>
                       ))}
                     </CustomInput>
@@ -283,7 +283,7 @@ const RouteForm = ({ route, isEdit, onClose }) => {
                     >
                       {deliveryAgents.map(agent => (
                         <MenuItem key={agent._id} value={agent._id}>
-                          {agent.fullName.first} {agent.fullName.last}
+                          {agent.fullName?.first ? `${agent.fullName.first} ${agent.fullName.last}` : (agent.fullName || agent.email || 'No Name')}
                         </MenuItem>
                       ))}
                     </CustomInput>
