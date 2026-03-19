@@ -110,10 +110,10 @@ const CreateOrder = () => {
     }))
   }
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = useMemo(() => products.filter(p => 
     p.productName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  ), [products, searchQuery])
 
   const cartSummary = useMemo(() => {
     let totalAmount = 0

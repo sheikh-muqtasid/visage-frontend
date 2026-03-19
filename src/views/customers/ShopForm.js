@@ -31,23 +31,35 @@ const ShopForm = ({ shop, isEdit, onClose }) => {
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
   const [routes, setRoutes] = useState([])
-  
+
   const [formData, setFormData] = useState({
     name: '',
     shopName: '',
     email: '',
     mobileNumber: '',
     address: '',
-    routeId: ''
+    routeId: '',
+    warehouseId: ''
   })
+
+  const [warehouses, setWarehouses] = useState([])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setDataLoading(true)
-        const response = await axios.get('/api/routes')
-        if (response.data.success) {
-          setRoutes(Array.isArray(response.data.data.routes) ? response.data.data.routes : [])
+        const [routesRes, warehousesRes] = await Promise.all([
+          axios.get('/api/routes'),
+          axios.get('/api/warehouses?limit=100')
+        ])
+
+        if (routesRes.data.success) {
+          setRoutes(Array.isArray(routesRes.data.data.routes) ? routesRes.data.data.routes : [])
+        }
+
+        if (warehousesRes.data.success) {
+          const whData = warehousesRes.data.data
+          setWarehouses(Array.isArray(whData.warehouses) ? whData.warehouses : [])
         }
 
         if (isEdit && shop) {
@@ -57,11 +69,12 @@ const ShopForm = ({ shop, isEdit, onClose }) => {
             email: shop.email || '',
             mobileNumber: shop.mobileNumber || '',
             address: shop.address || '',
-            routeId: shop.routeId || ''
+            routeId: shop.routeId || '',
+            warehouseId: shop.warehouseId?._id || shop.warehouseId || ''
           })
         }
       } catch (error) {
-        toast.error('Failed to load routes')
+        toast.error('Failed to load form data')
       } finally {
         setDataLoading(false)
       }
@@ -72,30 +85,36 @@ const ShopForm = ({ shop, isEdit, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value }
+
+      // Auto-select warehouse when route changes
+      if (name === 'routeId' && value) {
+        const selectedRoute = routes.find(r => r._id === value)
+        if (selectedRoute) {
+          // Ensure we extract the ID if it's an object
+          const whId = selectedRoute.warehouseId?._id || selectedRoute.warehouseId
+          updated.warehouseId = whId
+        }
+      }
+
+      return updated
+    })
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (!formData.name || !formData.shopName || !formData.mobileNumber || !formData.address) {
-      toast.error('Please fill in all required fields')
+
+    if (!formData.name || !formData.shopName || !formData.mobileNumber || !formData.address || !formData.warehouseId) {
+      toast.error('Please fill in all required fields including Warehouse')
       return
     }
 
     try {
       setLoading(true)
-      
+
       // Separate routeId from customer data as backend doesn't allow it in customer payload
       const { routeId, ...customerPayload } = formData
-      
-      // If creating new, we need a warehouseId. We'll use the selected route's warehouse if available
-      if (!isEdit && routeId) {
-        const selectedRoute = routes.find(r => r._id === routeId)
-        if (selectedRoute) {
-          customerPayload.warehouseId = selectedRoute.warehouseId?._id || selectedRoute.warehouseId
-        }
-      }
 
       let response
       if (isEdit) {
@@ -113,8 +132,9 @@ const ShopForm = ({ shop, isEdit, onClose }) => {
           try {
             await axios.post(`/api/routes/${routeId}/customers`, { customerId: shopId })
           } catch (routeError) {
+            const errorMsg = routeError.response?.data?.message || 'Route assignment failed'
             console.error('Failed to assign route:', routeError)
-            toast.error('Shop saved but route assignment failed')
+            toast.error(`Shop saved but: ${errorMsg}`, { duration: 5000 })
           }
         }
 
@@ -243,9 +263,9 @@ const ShopForm = ({ shop, isEdit, onClose }) => {
                 fullWidth
                 variant='outlined'
                 startIcon={<Icon icon='mdi:map-marker-radius' />}
-                sx={{ 
-                  borderRadius: 10, 
-                  py: 2, 
+                sx={{
+                  borderRadius: 10,
+                  py: 2,
                   textTransform: 'none',
                   borderColor: '#00AEEF',
                   color: '#00AEEF',
@@ -284,18 +304,50 @@ const ShopForm = ({ shop, isEdit, onClose }) => {
                 ))}
               </CustomInput>
             </Grid>
+
+            {/* Warehouse Dropdown (Required) */}
+            <Grid item xs={12}>
+              <CustomInput
+                select
+                fullWidth
+                label={formData.routeId ? 'Warehouse (Locked to Route)' : 'Select Warehouse'}
+                name='warehouseId'
+                value={formData.warehouseId}
+                onChange={handleChange}
+                required
+                disabled={!!formData.routeId} // Disable if route is selected
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <Icon icon={formData.routeId ? 'mdi:lock-outline' : 'mdi:warehouse'} />
+                    </InputAdornment>
+                  )
+                }}
+              >
+                {warehouses.map(wh => (
+                  <MenuItem key={wh._id} value={wh._id}>
+                    {wh.name}
+                  </MenuItem>
+                ))}
+              </CustomInput>
+              <Typography variant='caption' sx={{ ml: 2, color: formData.routeId ? 'primary.main' : 'text.secondary' }}>
+                {formData.routeId
+                  ? '* Locked to match selected route'
+                  : '* Store must be associated with a warehouse'}
+              </Typography>
+            </Grid>
           </Grid>
         </Box>
 
         <Box sx={{ px: 6, pb: 6 }}>
-          <Button 
-            fullWidth 
-            type='submit' 
-            variant='contained' 
+          <Button
+            fullWidth
+            type='submit'
+            variant='contained'
             disabled={loading}
-            sx={{ 
-              py: 3, 
-              borderRadius: 3, 
+            sx={{
+              py: 3,
+              borderRadius: 3,
               bgcolor: '#00AEEF',
               fontWeight: 600,
               fontSize: '1rem',

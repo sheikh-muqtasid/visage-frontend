@@ -80,11 +80,28 @@ const VerticalNavLink = ({
   const icon = parent && !item.icon ? themeConfig.navSubItemIcon : item.icon
 
   const isNavLinkActive = () => {
-    if (router.pathname === item.path || handleURLQueries(router, item.path)) {
+    const currentPath = router.asPath.split('?')[0].replace(/\/$/, '')
+    const itemPath = item.path?.replace(/\/$/, '') || ''
+
+    // Exact match or handle URL queries
+    if (currentPath === itemPath || handleURLQueries(router, item.path)) {
       return true
-    } else {
-      return false
     }
+
+    // Special logic for "Menu" to be active for its subpages
+    if (item.path === '/menu') {
+      const menuSubPages = ['/products', '/routes', '/customers', '/inventory', '/warehouses', '/orders', '/users']
+      
+      return menuSubPages.some(path => currentPath === path || currentPath.startsWith(path + '/'))
+    }
+
+    // Default: Return true if path starts with item path (for sub-routes)
+    // but not for root or home to avoid false positives
+    if (itemPath !== '' && itemPath !== '/home' && itemPath !== '/') {
+      return currentPath.startsWith(itemPath + '/')
+    }
+
+    return false
   }
 
   return (

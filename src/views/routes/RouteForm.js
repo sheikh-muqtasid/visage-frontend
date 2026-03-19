@@ -12,7 +12,7 @@ import MenuItem from '@mui/material/MenuItem'
 import InputAdornment from '@mui/material/InputAdornment'
 import Divider from '@mui/material/Divider'
 import CircularProgress from '@mui/material/CircularProgress'
-import { styled } from '@mui/material/styles'
+import { styled, alpha } from '@mui/material/styles'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -21,16 +21,9 @@ import Icon from 'src/@core/components/icon'
 import DatePicker from 'react-datepicker'
 import toast from 'react-hot-toast'
 import axios from 'src/api/axiosInstance'
+import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
 // ** Styled Components
-const DatePickerWrapper = styled('div')(({ theme }) => ({
-  '& .react-datepicker-wrapper': {
-    width: '100%'
-  },
-  '& .react-datepicker__input-container': {
-    width: '100%'
-  }
-}))
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   color: '#2196F3',
@@ -56,10 +49,6 @@ const CustomInput = styled(TextField)(({ theme }) => ({
   }
 }))
 
-// Helper to make alpha work (since I missed it in imports)
-const alpha = (color, opacity) => {
-  return `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`
-}
 
 const RouteForm = ({ route, isEdit, onClose }) => {
   // ** State
@@ -120,16 +109,25 @@ const RouteForm = ({ route, isEdit, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-      // If name is city, we might want to update the route name automatically
-      ...(name === 'city' ? { name: `${value} Route ${new Date().toLocaleDateString()}` } : {})
-    }))
+    setFormData(prev => {
+      const nextState = { ...prev, [name]: value }
+      
+      // Sync name with city change
+      if (name === 'city') {
+        const dateStr = prev.assignedDate ? new Date(prev.assignedDate).toLocaleDateString() : new Date().toLocaleDateString()
+        nextState.name = `${value} Route ${dateStr}`
+      }
+      
+      return nextState
+    })
   }
 
   const handleDateChange = (date) => {
-    setFormData(prev => ({ ...prev, assignedDate: date }))
+    setFormData(prev => ({ 
+      ...prev, 
+      assignedDate: date,
+      name: `${prev.city} Route ${date ? new Date(date).toLocaleDateString() : ''}`
+    }))
   }
 
   const handleSubmit = async (e) => {
