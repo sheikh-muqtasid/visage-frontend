@@ -269,7 +269,15 @@ const ProductManagement = () => {
         maxWidth='md'
         fullWidth
         scroll='body'
+        sx={{ '& .MuiDialog-paper': { position: 'relative' } }}
       >
+        <IconButton
+          size='small'
+          onClick={() => setOpenForm(false)}
+          sx={{ position: 'absolute', right: '1rem', top: '1rem', color: 'text.secondary', zIndex: 1 }}
+        >
+          <Icon icon='tabler:x' />
+        </IconButton>
         <ProductForm 
           product={selectedProduct} 
           isEdit={isEdit}
