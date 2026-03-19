@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -79,17 +79,37 @@ const ShopManagement = () => {
   const [openForm, setOpenForm] = useState(false)
   const [selectedShop, setSelectedShop] = useState(null)
   const [isEdit, setIsEdit] = useState(false)
+  const [routeMap, setRouteMap] = useState({}) // customerId -> routeName
 
   const fetchShops = async () => {
     try {
       setLoading(true)
-      const response = await axios.get('/api/customers')
-      if (response.data.success) {
-        setShops(response.data.data.customers || [])
+      const [shopsRes, routesRes] = await Promise.all([
+        axios.get('/api/customers'),
+        axios.get('/api/routes?limit=100')
+      ])
+
+      if (shopsRes.data.success) {
+        setShops(shopsRes.data.data.customers || [])
+      }
+
+      if (routesRes.data.success) {
+        const routes = routesRes.data.data.routes || []
+        const map = {}
+        routes.forEach(route => {
+          if (Array.isArray(route.customers)) {
+            route.customers.forEach(custId => {
+              // custId might be an object or string
+              const id = typeof custId === 'object' ? custId._id : custId
+              map[id] = route.name
+            })
+          }
+        })
+        setRouteMap(map)
       }
     } catch (error) {
-      console.error('Failed to fetch shops:', error)
-      toast.error('Failed to load shops')
+      console.error('Failed to fetch data:', error)
+      toast.error('Failed to load shops or routes')
     } finally {
       setLoading(false)
     }
@@ -123,10 +143,10 @@ const ShopManagement = () => {
     }
   }
 
-  const filteredShops = shops.filter(shop =>
+  const filteredShops = useMemo(() => shops.filter(shop =>
     shop.shopName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     shop.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  ), [shops, searchQuery])
 
   return (
     <Box sx={{ p: 6 }}>
@@ -201,14 +221,14 @@ const ShopManagement = () => {
                     </Box>
                     <Box sx={{ mt: 2 }}>
                       <Chip
-                        icon={<Icon icon='mdi:map-marker-off' fontSize='0.8rem' />}
-                        label='Unassigned'
+                        icon={<Icon icon={routeMap[shop._id] ? 'mdi:map-marker-path' : 'mdi:map-marker-off'} fontSize='0.8rem' />}
+                        label={routeMap[shop._id] || 'Unassigned'}
                         size='small'
                         sx={{
-                          bgcolor: alpha('#00AEEF', 0.1),
-                          color: '#00AEEF',
+                          bgcolor: routeMap[shop._id] ? alpha('#2E7D32', 0.1) : alpha('#00AEEF', 0.1),
+                          color: routeMap[shop._id] ? '#2E7D32' : '#00AEEF',
                           border: '1px solid',
-                          borderColor: alpha('#00AEEF', 0.2),
+                          borderColor: routeMap[shop._id] ? alpha('#2E7D32', 0.2) : alpha('#00AEEF', 0.2),
                           fontWeight: 600,
                           fontSize: '0.75rem',
                           height: 24,

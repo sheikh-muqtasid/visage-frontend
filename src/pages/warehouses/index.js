@@ -153,7 +153,10 @@ const WarehousesPage = () => {
           <Grid container spacing={4}>
             {warehouses.map((wh) => (
               <Grid item xs={12} key={wh._id}>
-                <WarehouseCard>
+                <WarehouseCard 
+                  onClick={() => router.push(`/warehouses/${wh._id}`)}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <CardContent sx={{ p: '20px !important' }}>
                     <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                       <IconBox>
@@ -173,7 +176,10 @@ const WarehousesPage = () => {
                       </Box>
                       <IconButton 
                         size='small' 
-                        onClick={(e) => handleMenuClick(e, wh)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleMenuClick(e, wh)
+                        }}
                         sx={{ color: 'text.secondary' }}
                       >
                         <Icon icon='mdi:dots-vertical' />

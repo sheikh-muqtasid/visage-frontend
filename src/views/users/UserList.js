@@ -1,368 +1,296 @@
-// import { useEffect, useState } from 'react'
-// import { getUsers } from 'src/services/userService'
+import { useEffect, useState, useMemo } from 'react'
+import { useRouter } from 'next/router'
 
-// // MUI
-// import {
-//   Box,
-//   Card,
-//   Typography,
-//   Avatar,
-//   Chip,
-//   Button
-// } from '@mui/material'
+// ** MUI Imports
+import Box from '@mui/material/Box'
+import Grid from '@mui/material/Grid'
+import Card from '@mui/material/Card'
+import Typography from '@mui/material/Typography'
+import CardContent from '@mui/material/CardContent'
+import IconButton from '@mui/material/IconButton'
+import Avatar from '@mui/material/Avatar'
+import CircularProgress from '@mui/material/CircularProgress'
+import Button from '@mui/material/Button'
+import Chip from '@mui/material/Chip'
+import Stack from '@mui/material/Stack'
+import { styled, alpha } from '@mui/material/styles'
 
-// // Components
-// import UserStats from './UserStats'
-// import UserForm from './UserForm'
-// import UserDetails from './UserDetails'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
-// const roles = [
-//   'ALL',
-//   'SUPER_ADMIN',
-//   'ADMIN',
-//   'WAREHOUSE_OFFICER',
-//   'ORDER_BOOKER',
-//   'DELIVERY_AGENT',
-//   'ACCOUNTANT',
-//   'MANAGER'
-// ]
-
-// const UserList = () => {
-//   const [users, setUsers] = useState([])
-//   const [openForm, setOpenForm] = useState(false)
-//   const [selectedUser, setSelectedUser] = useState(null)
-//   const [roleFilter, setRoleFilter] = useState('')
-
-//   // 🔥 FETCH USERS
-//   const fetchUsers = async () => {
-//     try {
-//       const res = await getUsers({ role: roleFilter })
-//       setUsers(res.data)
-//     } catch (err) {
-//       console.error(err)
-//     }
-//   }
-
-//   useEffect(() => {
-//     fetchUsers()
-//   }, [roleFilter])
-
-//   return (
-//     <>
-//       {/* 🔥 STATS */}
-//       <UserStats users={users} />
-
-//       {/* 🔥 TOP BAR */}
-//       <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
-        
-//         {/* ROLE FILTER BUTTONS */}
-//         <Box display='flex' gap={2}>
-//           {roles.map(role => (
-//             <Button
-//               key={role}
-//               variant={
-//                 roleFilter === role || (role === 'ALL' && roleFilter === '')
-//                   ? 'contained'
-//                   : 'outlined'
-//               }
-//               onClick={() => setRoleFilter(role === 'ALL' ? '' : role)}
-//             >
-//               {role === 'ALL' ? 'All' : role.replace('_', ' ')}
-//             </Button>
-//           ))}
-//         </Box>
-
-//         {/* ADD USER */}
-//         <Button variant='contained' onClick={() => setOpenForm(true)}>
-//           Add User
-//         </Button>
-//       </Box>
-
-//       {/* 🔥 USERS LIST */}
-//       <Card sx={{ p: 4 }}>
-//         {users.map(user => (
-//           <Box
-//             key={user._id}
-//             sx={{
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'space-between',
-//               p: 3,
-//               mb: 3,
-//               borderRadius: 2,
-//               border: '1px solid #eee',
-//               cursor: 'pointer',
-//               '&:hover': {
-//                 backgroundColor: '#f9f9f9'
-//               }
-//             }}
-//             onClick={() => setSelectedUser(user)}
-//           >
-//             {/* LEFT SIDE */}
-//             <Box display='flex' alignItems='center' gap={3}>
-//               <Avatar>
-//                 {user.fullName?.first?.[0]}
-//                 {user.fullName?.last?.[0]}
-//               </Avatar>
-
-//               <Box>
-//                 <Typography fontWeight={600}>
-//                   {user.fullName?.first} {user.fullName?.last}
-//                 </Typography>
-
-//                 <Typography variant='body2' color='text.secondary'>
-//                   {user.email}
-//                 </Typography>
-//               </Box>
-//             </Box>
-
-//             {/* RIGHT SIDE */}
-//             <Box textAlign='right'>
-//               <Chip
-//                 label={user.role?.replace('_', ' ')}
-//                 color='primary'
-//                 sx={{ mb: 1 }}
-//               />
-
-//               <Typography
-//                 variant='body2'
-//                 sx={{
-//                   color: user.status === 'ACTIVE' ? 'green' : 'red'
-//                 }}
-//               >
-//                 ● {user.status}
-//               </Typography>
-//             </Box>
-//           </Box>
-//         ))}
-
-//         {/* EMPTY STATE */}
-//         {users.length === 0 && (
-//           <Typography textAlign='center' color='text.secondary'>
-//             No users found
-//           </Typography>
-//         )}
-//       </Card>
-
-//       {/* 🔥 ADD USER MODAL */}
-//       <UserForm
-//         open={openForm}
-//         onClose={() => setOpenForm(false)}
-//         refresh={fetchUsers}
-//       />
-
-//       {/* 🔥 USER DETAILS DRAWER / MODAL */}
-//       {selectedUser && (
-//         <UserDetails
-//           user={selectedUser}
-//           onClose={() => setSelectedUser(null)}
-//           refresh={fetchUsers}
-//         />
-//       )}
-//     </>
-//   )
-// }
-
-// export default UserList
-
-import { useEffect, useState } from 'react'
+// ** Third Party Imports
+import toast from 'react-hot-toast'
 import { getUsers } from 'src/services/userService'
 
-// MUI
-import {
-  Box,
-  Card,
-  Typography,
-  Avatar,
-  Chip,
-  Button,
-  Grid
-} from '@mui/material'
-
-// Components
+// ** Custom Components
 import UserForm from './UserForm'
 import UserDetails from './UserDetails'
 
 const roles = [
-  'ALL',
-  'SUPER_ADMIN',
-  'ADMIN',
-  'WAREHOUSE_OFFICER',
-  'ORDER_BOOKER',
-  'DELIVERY_AGENT',
-  'ACCOUNTANT',
-  'MANAGER'
+  { label: 'All', value: 'ALL' },
+  { label: 'Admin', value: 'ADMIN' },
+  { label: 'Warehouse', value: 'WAREHOUSE' },
+  { label: 'Booker', value: 'BOOKER' },
+  { label: 'Agent', value: 'AGENT' },
+  { label: 'Accountant', value: 'ACCOUNTANT' },
+  { label: 'Manager', value: 'MANAGER' }
 ]
 
+const SummaryCard = styled(Card)(({ theme, color }) => ({
+  borderRadius: 16,
+  boxShadow: 'none',
+  border: `1px solid ${alpha(color, 0.1)}`,
+  backgroundColor: alpha(color, 0.05),
+  height: '100%',
+  textAlign: 'center',
+  padding: theme.spacing(4),
+  '& .count': {
+    color: color,
+    fontWeight: 700,
+    fontSize: '1.5rem',
+    marginBottom: theme.spacing(1)
+  },
+  '& .label': {
+    color: color,
+    fontWeight: 500,
+    opacity: 0.8
+  }
+}))
+
+const FilterButton = styled(Button)(({ theme, active }) => ({
+  borderRadius: 12,
+  textTransform: 'none',
+  padding: theme.spacing(2, 6),
+  border: `1px solid ${theme.palette.divider}`,
+  color: theme.palette.text.secondary,
+  fontSize: '0.9rem',
+  fontWeight: 500,
+  minWidth: 100,
+  ...(active && {
+    background: 'linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%)',
+    color: theme.palette.common.white,
+    borderColor: 'transparent',
+    '&:hover': {
+      background: 'linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%)',
+      opacity: 0.9
+    }
+  })
+}))
+
+const UserCard = styled(Card)(({ theme }) => ({
+  borderRadius: 16,
+  marginBottom: theme.spacing(4),
+  boxShadow: 'none',
+  border: `1px solid ${theme.palette.divider}`,
+  transition: 'all 0.2s',
+  '&:hover': {
+    boxShadow: theme.shadows[2],
+    borderColor: 'transparent'
+  }
+}))
+
+const RoleBadge = styled(Box)(({ theme, role }) => {
+  const colors = {
+    SUPER_ADMIN: { bg: alpha('#00AEEF', 0.1), text: '#00AEEF' },
+    ADMIN: { bg: alpha('#7367F0', 0.1), text: '#7367F0' },
+    MANAGER: { bg: alpha('#8231D3', 0.1), text: '#8231D3' },
+    ORDER_BOOKER: { bg: alpha('#28C76F', 0.1), text: '#28C76F' },
+    DELIVERY_AGENT: { bg: alpha('#FF9F43', 0.1), text: '#FF9F43' },
+    ACCOUNTANT: { bg: alpha('#EA5455', 0.1), text: '#EA5455' },
+    WAREHOUSE_OFFICER: { bg: alpha('#4B4B4B', 0.1), text: '#4B4B4B' }
+  }
+  const color = colors[role] || colors.ADMIN
+  
+  return {
+    padding: theme.spacing(0.5, 3),
+    borderRadius: 8,
+    backgroundColor: color.bg,
+    color: color.text,
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    textTransform: 'none'
+  }
+})
+
+const getAvatarColor = (role) => {
+  const colors = {
+    SUPER_ADMIN: 'linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%)',
+    ADMIN: 'linear-gradient(135deg, #32CC70 0%, #32DCB0 100%)',
+    MANAGER: 'linear-gradient(135deg, #AB64F0 0%, #8231D3 100%)',
+    ORDER_BOOKER: 'linear-gradient(135deg, #28C76F 0%, #48DA89 100%)',
+    DELIVERY_AGENT: 'linear-gradient(135deg, #FF9F43 0%, #FFC085 100%)'
+  }
+  return colors[role] || colors.ADMIN
+}
+
 const UserList = () => {
+  const router = useRouter()
   const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [openForm, setOpenForm] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
-  const [roleFilter, setRoleFilter] = useState('')
+  const [roleFilter, setRoleFilter] = useState('ALL')
 
   const fetchUsers = async () => {
     try {
-      const res = await getUsers({ role: roleFilter })
-      setUsers(res.data)
+      setLoading(true)
+      const res = await getUsers()
+      setUsers(res.data || [])
     } catch (err) {
       console.error(err)
+      toast.error('Failed to load users')
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchUsers()
-  }, [roleFilter])
+  }, [])
 
-  // 🔥 STATS CALCULATION
-  const total = users.length
-  const active = users.filter(u => u.status === 'ACTIVE').length
-  const field = users.filter(u =>
-    ['DELIVERY_AGENT', 'ORDER_BOOKER'].includes(u.role)
-  ).length
+  const stats = useMemo(() => ({
+    total: users.length,
+    active: users.filter(u => u.status === 'ACTIVE').length
+  }), [users])
+
+  const filteredUsers = useMemo(() => users.filter(user => {
+    if (roleFilter === 'ALL') return true
+    
+    if (roleFilter === 'ADMIN') return ['SUPER_ADMIN', 'ADMIN'].includes(user.role)
+    if (roleFilter === 'WAREHOUSE') return user.role === 'WAREHOUSE_OFFICER'
+    if (roleFilter === 'BOOKER') return user.role === 'ORDER_BOOKER'
+    if (roleFilter === 'AGENT') return user.role === 'DELIVERY_AGENT'
+    if (roleFilter === 'ACCOUNTANT') return user.role === 'ACCOUNTANT'
+    if (roleFilter === 'MANAGER') return user.role === 'MANAGER'
+    
+    return true
+  }), [users, roleFilter])
 
   return (
-    <Box>
-
-      {/* 🔥 HEADER */}
-      <Box
-        display='flex'
-        justifyContent='space-between'
-        alignItems='center'
-        mb={6}
-      >
-        <Typography variant='h4' fontWeight={600}>
+    <Box sx={{ pb: 10 }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 8 }}>
+        <IconButton onClick={() => router.back()} sx={{ mr: 2 }}>
+          <Icon icon='mdi:arrow-left' />
+        </IconButton>
+        <Typography variant='h5' sx={{ fontWeight: 700, flexGrow: 1, textAlign: 'center' }}>
           User Management
         </Typography>
-
         <Button
           variant='contained'
+          startIcon={<Icon icon='mdi:plus' />}
           onClick={() => setOpenForm(true)}
-          sx={{
+          sx={{ 
+            bgcolor: '#00AEEF',
+            borderRadius: 3,
             textTransform: 'none',
-            borderRadius: 2,
-            px: 4
+            px: 6,
+            '&:hover': { bgcolor: '#0096ce' }
           }}
         >
-          Add User
+          Add
         </Button>
       </Box>
 
-      {/* 🔥 STATS */}
-      <Grid container spacing={4} mb={6}>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 4 }}>
-            <Typography variant='body2'>Total Users</Typography>
-            <Typography variant='h5' fontWeight={600}>
-              {total}
-            </Typography>
-          </Card>
+      <Grid container spacing={6} sx={{ mb: 8 }}>
+        <Grid item xs={6}>
+          <SummaryCard color='#00AEEF'>
+            <div className='count'>{stats.total}</div>
+            <div className='label'>Total</div>
+          </SummaryCard>
         </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 4 }}>
-            <Typography variant='body2'>Active Users</Typography>
-            <Typography variant='h5' fontWeight={600}>
-              {active}
-            </Typography>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 4 }}>
-            <Typography variant='body2'>Field Users</Typography>
-            <Typography variant='h5' fontWeight={600}>
-              {field}
-            </Typography>
-          </Card>
+        <Grid item xs={6}>
+          <SummaryCard color='#28C76F'>
+            <div className='count'>{stats.active}</div>
+            <div className='label'>Active</div>
+          </SummaryCard>
         </Grid>
       </Grid>
 
-      {/* 🔥 ROLE FILTER */}
-      <Box display='flex' gap={2} mb={6} flexWrap='wrap'>
+      {/* Filter Tabs */}
+      <Box sx={{ display: 'flex', gap: 3, mb: 8, overflowX: 'auto', pb: 2 }}>
         {roles.map(role => (
-          <Button
-            key={role}
-            variant={
-              roleFilter === role || (role === 'ALL' && roleFilter === '')
-                ? 'contained'
-                : 'outlined'
-            }
-            onClick={() => setRoleFilter(role === 'ALL' ? '' : role)}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none'
-            }}
+          <FilterButton
+            key={role.value}
+            active={roleFilter === role.value}
+            onClick={() => setRoleFilter(role.value)}
           >
-            {role === 'ALL' ? 'All' : role.replace('_', ' ')}
-          </Button>
+            {role.label}
+          </FilterButton>
         ))}
       </Box>
 
-      {/* 🔥 USERS LIST */}
-      <Card sx={{ p: 4 }}>
-        {users.length === 0 ? (
-          <Typography textAlign='center' color='text.secondary'>
-            No users found
-          </Typography>
-        ) : (
-          users.map(user => (
-            <Box
-              key={user._id}
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                p: 3,
-                mb: 3,
-                borderRadius: 2,
-                border: '1px solid #eee',
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: '#f9f9f9'
-                }
-              }}
-              onClick={() => setSelectedUser(user)}
-            >
-              {/* LEFT */}
-              <Box display='flex' alignItems='center' gap={3}>
-                <Avatar>
-                  {user.fullName?.first?.[0]}
-                  {user.fullName?.last?.[0]}
-                </Avatar>
+      <Typography variant='h6' sx={{ mb: 6, fontWeight: 700 }}>Users</Typography>
 
-                <Box>
-                  <Typography fontWeight={600}>
-                    {user.fullName?.first} {user.fullName?.last}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {user.email}
-                  </Typography>
+      {/* User List */}
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 20 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box>
+          {filteredUsers.map(user => (
+            <UserCard key={user._id} onClick={() => setSelectedUser(user)} sx={{ cursor: 'pointer' }}>
+              <CardContent sx={{ p: '16px 20px !important' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Avatar 
+                    sx={{ 
+                      mr: 4, 
+                      width: 48, 
+                      height: 48, 
+                      background: getAvatarColor(user.role),
+                      fontSize: '1rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    {user.fullName?.first?.[0]}{user.fullName?.last?.[0]}
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
+                      {user.fullName?.first} {user.fullName?.last}
+                    </Typography>
+                    <Typography variant='caption' color='text.secondary' sx={{ fontWeight: 500 }}>
+                      {user.email || user.mobileNumber || '---'}
+                    </Typography>
+                    {user.role === 'ORDER_BOOKER' && user.assignedRoutes?.length > 0 && (
+                      <Typography variant='caption' sx={{ display: 'block', mt: 0.5, color: 'text.secondary', fontSize: '0.7rem' }}>
+                        • {user.assignedRoutes.map(r => r.name).join(', ')}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <RoleBadge role={user.role}>
+                      {user.role?.replace('_', ' ')}
+                    </RoleBadge>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2 }}>
+                      <Box 
+                        sx={{ 
+                          width: 8, 
+                          height: 8, 
+                          borderRadius: '50%', 
+                          bgcolor: user.status === 'ACTIVE' ? '#28C76F' : '#EA5455',
+                          mr: 1.5
+                        }} 
+                      />
+                      <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {user.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Box>
-              </Box>
-
-              {/* RIGHT */}
-              <Box textAlign='right'>
-                <Chip
-                  label={user.role?.replace('_', ' ')}
-                  color='primary'
-                  sx={{ mb: 1 }}
-                />
-
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: user.status === 'ACTIVE' ? 'green' : 'red'
-                  }}
-                >
-                  ● {user.status}
-                </Typography>
-              </Box>
+              </CardContent>
+            </UserCard>
+          ))}
+          {filteredUsers.length === 0 && (
+            <Box sx={{ py: 20, textAlign: 'center', opacity: 0.5 }}>
+              <Icon icon='mdi:account-off-outline' fontSize='3rem' />
+              <Typography sx={{ mt: 2 }}>No users found</Typography>
             </Box>
-          ))
-        )}
-      </Card>
+          )}
+        </Box>
+      )}
 
-      {/* 🔥 MODALS */}
+      {/* Forms */}
       <UserForm
         open={openForm}
         onClose={() => setOpenForm(false)}

@@ -1,47 +1,39 @@
-// import { useState } from 'react'
-// import { updateUser, deleteUser } from 'src/services/userService'
-
-// const UserDetails = ({ user, onClose, refresh }) => {
-//   const [data, setData] = useState(user)
-
-//   const handleUpdate = async () => {
-//     await updateUser(user._id, data)
-//     refresh()
-//     onClose()
-//   }
-
-//   const handleDelete = async () => {
-//     await deleteUser(user._id)
-//     refresh()
-//     onClose()
-//   }
-
-//   return (
-//     <div className='card'>
-//       <input
-//         value={data.fullName.first}
-//         onChange={e => setData({ ...data, fullName: { ...data.fullName, first: e.target.value } })}
-//       />
-
-//       <button onClick={handleUpdate}>Update</button>
-//       <button onClick={handleDelete}>Delete</button>
-//     </div>
-//   )
-// }
-
-// export default UserDetails
-
 import { useState, useEffect } from 'react'
-import {
-  Drawer,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  MenuItem
-} from '@mui/material'
 
+// ** MUI Imports
+import Drawer from '@mui/material/Drawer'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import MenuItem from '@mui/material/MenuItem'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import Avatar from '@mui/material/Avatar'
+import { styled, alpha } from '@mui/material/styles'
+
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
+
+// ** Third Party Imports
+import toast from 'react-hot-toast'
 import { updateUser, deleteUser } from 'src/services/userService'
+
+const Header = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(6),
+  justifyContent: 'space-between'
+}))
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: 12,
+  padding: theme.spacing(2.5, 6),
+  fontWeight: 600,
+  textTransform: 'none',
+  fontSize: '0.9rem',
+  boxShadow: 'none'
+}))
 
 const roles = [
   'SUPER_ADMIN',
@@ -54,6 +46,7 @@ const roles = [
 ]
 
 const UserDetails = ({ user, onClose, refresh }) => {
+  const [loading, setLoading] = useState(false)
   const [data, setData] = useState({
     fullName: { first: '', last: '' },
     email: '',
@@ -61,7 +54,6 @@ const UserDetails = ({ user, onClose, refresh }) => {
     role: ''
   })
 
-  // ✅ SAFE LOAD
   useEffect(() => {
     if (user) {
       setData({
@@ -76,112 +68,167 @@ const UserDetails = ({ user, onClose, refresh }) => {
     }
   }, [user])
 
-  // ✅ UPDATE USER
   const handleUpdate = async () => {
     try {
+      setLoading(true)
       await updateUser(user._id, data)
+      toast.success('User updated successfully')
       refresh()
       onClose()
     } catch (err) {
       console.error(err)
-      alert('Update failed')
+      toast.error('Update failed')
+    } finally {
+      setLoading(false)
     }
   }
 
-  // ✅ DELETE USER
   const handleDelete = async () => {
-    try {
-      await deleteUser(user._id)
-      refresh()
-      onClose()
-    } catch (err) {
-      console.error(err)
-      alert('Delete failed')
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        setLoading(true)
+        await deleteUser(user._id)
+        toast.success('User deleted successfully')
+        refresh()
+        onClose()
+      } catch (err) {
+        console.error(err)
+        toast.error('Delete failed')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
   return (
-    <Drawer anchor='right' open={!!user} onClose={onClose}>
-      <Box sx={{ width: 350, p: 4 }}>
-        <Typography variant='h6' mb={3}>
-          Edit User
-        </Typography>
+    <Drawer 
+      anchor='right' 
+      open={!!user} 
+      onClose={onClose}
+      PaperProps={{
+        sx: { width: { xs: '100%', sm: 400 }, borderRadius: '20px 0 0 20px' }
+      }}
+    >
+      <Header>
+        <Typography variant='h6' sx={{ fontWeight: 700 }}>Edit User Details</Typography>
+        <IconButton onClick={onClose} size='small'>
+          <Icon icon='mdi:close' />
+        </IconButton>
+      </Header>
 
-        {/* FIRST NAME */}
-        <TextField
-          fullWidth
-          label='First Name'
-          sx={{ mb: 2 }}
-          value={data.fullName.first}
-          onChange={e =>
-            setData({
-              ...data,
-              fullName: { ...data.fullName, first: e.target.value }
-            })
-          }
-        />
+      <Box sx={{ p: 6 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 8 }}>
+          <Avatar 
+            sx={{ 
+              width: 80, 
+              height: 80, 
+              mb: 4, 
+              fontSize: '2rem',
+              background: 'linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%)'
+            }}
+          >
+            {data.fullName.first?.[0]}{data.fullName.last?.[0]}
+          </Avatar>
+          <Typography variant='h6' sx={{ fontWeight: 600 }}>{data.fullName.first} {data.fullName.last}</Typography>
+          <Typography variant='body2' color='text.secondary'>{data.role.replace('_', ' ')}</Typography>
+        </Box>
 
-        {/* LAST NAME */}
-        <TextField
-          fullWidth
-          label='Last Name'
-          sx={{ mb: 2 }}
-          value={data.fullName.last}
-          onChange={e =>
-            setData({
-              ...data,
-              fullName: { ...data.fullName, last: e.target.value }
-            })
-          }
-        />
+        <Box component='form' sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <Box sx={{ display: 'flex', gap: 4 }}>
+            <TextField
+              fullWidth
+              label='First Name'
+              value={data.fullName.first}
+              onChange={e => setData({ ...data, fullName: { ...data.fullName, first: e.target.value } })}
+              InputProps={{ sx: { borderRadius: 3 } }}
+            />
+            <TextField
+              fullWidth
+              label='Last Name'
+              value={data.fullName.last}
+              onChange={e => setData({ ...data, fullName: { ...data.fullName, last: e.target.value } })}
+              InputProps={{ sx: { borderRadius: 3 } }}
+            />
+          </Box>
 
-        {/* EMAIL */}
-        <TextField
-          fullWidth
-          label='Email'
-          sx={{ mb: 2 }}
-          value={data.email}
-          onChange={e => setData({ ...data, email: e.target.value })}
-        />
+          <TextField
+            fullWidth
+            label='Email'
+            value={data.email}
+            onChange={e => setData({ ...data, email: e.target.value })}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position='start'>
+                  <Icon icon='mdi:email-outline' />
+                </InputAdornment>
+              ),
+              sx: { borderRadius: 3 }
+            }}
+          />
 
-        {/* PHONE */}
-        <TextField
-          fullWidth
-          label='Phone'
-          sx={{ mb: 2 }}
-          value={data.mobileNumber}
-          onChange={e => setData({ ...data, mobileNumber: e.target.value })}
-        />
+          <TextField
+            fullWidth
+            label='Phone'
+            value={data.mobileNumber}
+            onChange={e => setData({ ...data, mobileNumber: e.target.value })}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position='start'>
+                  <Icon icon='mdi:phone-outline' />
+                </InputAdornment>
+              ),
+              sx: { borderRadius: 3 }
+            }}
+          />
 
-        {/* ROLE */}
-        <TextField
-          select
-          fullWidth
-          label='Role'
-          sx={{ mb: 3 }}
-          value={data.role}
-          onChange={e => setData({ ...data, role: e.target.value })}
-        >
-          {roles.map(r => (
-            <MenuItem key={r} value={r}>
-              {r.replace('_', ' ')}
-            </MenuItem>
-          ))}
-        </TextField>
+          <TextField
+            select
+            fullWidth
+            label='Role'
+            value={data.role}
+            onChange={e => setData({ ...data, role: e.target.value })}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position='start'>
+                  <Icon icon='mdi:shield-check-outline' />
+                </InputAdornment>
+              ),
+              sx: { borderRadius: 3 }
+            }}
+          >
+            {roles.map(r => (
+              <MenuItem key={r} value={r}>
+                {r.replace('_', ' ')}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
-        {/* ACTION BUTTONS */}
-        <Box display='flex' justifyContent='space-between'>
-          <Button color='error' onClick={handleDelete}>
-            Delete
-          </Button>
-
-          <Button variant='contained' onClick={handleUpdate}>
-            Update
-          </Button>
+        <Box sx={{ mt: 10, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <StyledButton 
+            fullWidth 
+            variant='contained' 
+            onClick={handleUpdate}
+            disabled={loading}
+            sx={{ bgcolor: '#00AEEF', '&:hover': { bgcolor: '#0096ce' } }}
+          >
+            Save Changes
+          </StyledButton>
+          <StyledButton 
+            fullWidth 
+            color='error' 
+            variant='outlined' 
+            onClick={handleDelete}
+            disabled={loading}
+            startIcon={<Icon icon='mdi:trash-can-outline' />}
+            sx={{ borderColor: alpha('#EA5455', 0.5) }}
+          >
+            Delete User
+          </StyledButton>
         </Box>
       </Box>
     </Drawer>
   )
 }
 
-export default UserDetails
+export default UserDetails

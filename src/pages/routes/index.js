@@ -13,6 +13,8 @@ import Fab from '@mui/material/Fab'
 import Dialog from '@mui/material/Dialog'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
 import { styled, alpha } from '@mui/material/styles'
 import Avatar from '@mui/material/Avatar'
 
@@ -60,6 +62,7 @@ const RouteManagement = () => {
   const [openAssign, setOpenAssign] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState(null)
   const [isEdit, setIsEdit] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const fetchRoutes = async () => {
     try {
@@ -132,13 +135,40 @@ const RouteManagement = () => {
         </Typography>
       </Stack>
 
+      {/* Search Bar */}
+      <TextField
+        fullWidth
+        placeholder='Search by route name or city...'
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        sx={{ mb: 6 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position='start'>
+              <Icon icon='mdi:magnify' color='text.secondary' />
+            </InputAdornment>
+          ),
+          sx: { 
+            borderRadius: 5, 
+            bgcolor: 'background.paper',
+            boxShadow: '0 4px 12px -5px rgba(0,0,0,0.1)',
+            '& fieldset': { border: 'none' }
+          }
+        }}
+      />
+
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
           <CircularProgress />
         </Box>
       ) : (
         <Box>
-          {routes.map((route, index) => (
+          {routes
+            .filter(route => 
+              route.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+              route.city?.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((route, index) => (
             <RouteCard key={route._id}>
               <CardContent>
                 <Grid container spacing={4} alignItems='center'>
