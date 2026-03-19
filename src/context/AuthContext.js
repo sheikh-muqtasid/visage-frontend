@@ -80,7 +80,7 @@ const AuthProvider = ({ children }) => {
           window.localStorage.setItem('userData', JSON.stringify(userData))
         } else {
           // If not rememberMe, we still need token for session, but maybe not in localStorage?
-          // Vuexy usually puts it in localStorage anyway but clears on some actions, or we just put it.
+          // Visage usually puts it in localStorage anyway
           // Let's just follow the original logic and adapt
           window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.accessToken)
           if (response.data.refreshToken) {

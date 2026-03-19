@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/router'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -72,6 +73,9 @@ const getColorForAvatar = (name) => {
 }
 
 const ShopManagement = () => {
+  // ** Hooks
+  const router = useRouter()
+
   // ** State
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
@@ -192,7 +196,7 @@ const ShopManagement = () => {
       ) : (
         <Box>
           {filteredShops.map((shop) => (
-            <ShopCard key={shop._id} onClick={() => handleEditShop(shop)}>
+            <ShopCard key={shop._id} onClick={() => router.push(`/customers/${shop._id}`)}>
               <CardContent sx={{ pb: '16px !important' }}>
                 <Grid container spacing={4} alignItems='center'>
                   <Grid item>

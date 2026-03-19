@@ -25,6 +25,7 @@ import axios from 'src/api/axiosInstance'
 
 // ** Custom Components
 import AddStockForm from 'src/views/inventory/AddStockForm'
+import VanLoadForm from 'src/views/inventory/VanLoadForm'
 
 const HeaderWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4, 6),
@@ -92,6 +93,7 @@ const InventoryManagement = () => {
   const [inventory, setInventory] = useState({}) // { productId: { quantity, cartons, value } }
   const [totalValue, setTotalValue] = useState(0)
   const [addStockOpen, setAddStockOpen] = useState(false)
+  const [vanLoadOpen, setVanLoadOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleRefresh = () => setRefreshTrigger(prev => prev + 1)
@@ -313,6 +315,7 @@ const InventoryManagement = () => {
         <Fab
           variant='extended'
           size='medium'
+          onClick={() => setVanLoadOpen(true)}
           sx={{ 
             bgcolor: '#E91E63', 
             color: 'white', 
@@ -347,6 +350,13 @@ const InventoryManagement = () => {
       <AddStockForm 
         open={addStockOpen} 
         onClose={() => setAddStockOpen(false)} 
+        onSuccess={handleRefresh}
+      />
+
+      {/* Van Load Form Modal */}
+      <VanLoadForm
+        open={vanLoadOpen}
+        onClose={() => setVanLoadOpen(false)}
         onSuccess={handleRefresh}
       />
     </Box>
