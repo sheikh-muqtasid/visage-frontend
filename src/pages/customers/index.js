@@ -266,8 +266,15 @@ const ShopManagement = () => {
         maxWidth='sm'
         open={openForm}
         onClose={() => setOpenForm(false)}
-        sx={{ '& .MuiDialog-paper': { borderRadius: 4 } }}
+        sx={{ '& .MuiDialog-paper': { borderRadius: 4, position: 'relative' } }}
       >
+        <IconButton
+          size='small'
+          onClick={() => setOpenForm(false)}
+          sx={{ position: 'absolute', right: '1rem', top: '1rem', color: 'text.secondary', zIndex: 1 }}
+        >
+          <Icon icon='tabler:x' />
+        </IconButton>
         <ShopForm
           shop={selectedShop}
           isEdit={isEdit}

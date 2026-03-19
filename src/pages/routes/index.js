@@ -273,8 +273,15 @@ const RouteManagement = () => {
         maxWidth='sm' 
         open={openForm} 
         onClose={() => setOpenForm(false)}
-        sx={{ '& .MuiDialog-paper': { borderRadius: 4 } }}
+        sx={{ '& .MuiDialog-paper': { borderRadius: 4, position: 'relative' } }}
       >
+        <IconButton
+          size='small'
+          onClick={() => setOpenForm(false)}
+          sx={{ position: 'absolute', right: '1rem', top: '1rem', color: 'text.secondary', zIndex: 1 }}
+        >
+          <Icon icon='tabler:x' />
+        </IconButton>
         <RouteForm 
           route={selectedRoute} 
           isEdit={isEdit} 
@@ -287,7 +294,15 @@ const RouteManagement = () => {
         fullScreen
         open={openAssign} 
         onClose={() => setOpenAssign(false)}
+        sx={{ position: 'relative' }}
       >
+        <IconButton
+          size='small'
+          onClick={() => setOpenAssign(false)}
+          sx={{ position: 'absolute', right: '1rem', top: '1rem', color: 'text.secondary', zIndex: 1 }}
+        >
+          <Icon icon='tabler:x' />
+        </IconButton>
         <AssignShops 
           route={selectedRoute} 
           onClose={handleCloseAssign} 

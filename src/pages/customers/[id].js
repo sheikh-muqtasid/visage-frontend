@@ -345,8 +345,15 @@ const StoreDetail = () => {
         onClose={() => setOpenEdit(false)}
         fullWidth
         maxWidth='sm'
-        sx={{ '& .MuiDialog-paper': { borderRadius: 4 } }}
+        sx={{ '& .MuiDialog-paper': { borderRadius: 4, position: 'relative' } }}
       >
+        <IconButton
+          size='small'
+          onClick={() => setOpenEdit(false)}
+          sx={{ position: 'absolute', right: '1rem', top: '1rem', color: 'text.secondary', zIndex: 1 }}
+        >
+          <Icon icon='tabler:x' />
+        </IconButton>
         <ShopForm 
           shop={customer} 
           isEdit={true} 
