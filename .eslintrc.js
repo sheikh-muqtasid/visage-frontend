@@ -4,12 +4,10 @@ module.exports = {
     es6: true,
     browser: true
   },
-  parser: '@babel/eslint-parser',
   extends: ['next/core-web-vitals', 'prettier'],
   parserOptions: {
     ecmaVersion: 11,
     sourceType: 'module',
-    project: './jsconfig.json',
     ecmaFeatures: {
       jsx: true,
       modules: true,

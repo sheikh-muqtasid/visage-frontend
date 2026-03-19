@@ -5,7 +5,7 @@ import { createContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 // ** Axios
-import axios from 'axios'
+import axios from 'src/api/axiosInstance'
 
 // ** Config
 import authConfig from 'src/configs/auth'
@@ -34,19 +34,19 @@ const AuthProvider = ({ children }) => {
       if (storedToken) {
         setLoading(true)
         await axios
-          .get(authConfig.meEndpoint, {
-            headers: {
-              Authorization: storedToken
-            }
-          })
+          .get(authConfig.meEndpoint)
           .then(async response => {
             setLoading(false)
-            setUser({ ...response.data.userData })
+            const userData = response.data.userData || response.data
+            if (userData && userData.role) {
+              userData.role = userData.role.toLowerCase()
+            }
+            setUser({ ...userData })
           })
           .catch(() => {
             localStorage.removeItem('userData')
-            localStorage.removeItem('refreshToken')
-            localStorage.removeItem('accessToken')
+            localStorage.removeItem(authConfig.storageRefreshTokenKeyName)
+            localStorage.removeItem(authConfig.storageTokenKeyName)
             setUser(null)
             setLoading(false)
             if (authConfig.onTokenExpiration === 'logout' && !router.pathname.includes('login')) {
@@ -65,12 +65,32 @@ const AuthProvider = ({ children }) => {
     axios
       .post(authConfig.loginEndpoint, params)
       .then(async response => {
-        params.rememberMe
-          ? window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.accessToken)
-          : null
+        const userData = response.data.userData || {
+          _id: response.data._id,
+          fullName: response.data.fullName,
+          email: response.data.email,
+          role: response.data.role?.toLowerCase()
+        }
+
+        if (params.rememberMe) {
+          window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.accessToken)
+          if (response.data.refreshToken) {
+            window.localStorage.setItem(authConfig.storageRefreshTokenKeyName, response.data.refreshToken)
+          }
+          window.localStorage.setItem('userData', JSON.stringify(userData))
+        } else {
+          // If not rememberMe, we still need token for session, but maybe not in localStorage?
+          // Visage usually puts it in localStorage anyway
+          // Let's just follow the original logic and adapt
+          window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.accessToken)
+          if (response.data.refreshToken) {
+            window.localStorage.setItem(authConfig.storageRefreshTokenKeyName, response.data.refreshToken)
+          }
+        }
+
         const returnUrl = router.query.returnUrl
-        setUser({ ...response.data.userData })
-        params.rememberMe ? window.localStorage.setItem('userData', JSON.stringify(response.data.userData)) : null
+        setUser({ ...userData })
+        
         const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
         router.replace(redirectURL)
       })
@@ -80,9 +100,14 @@ const AuthProvider = ({ children }) => {
   }
 
   const handleLogout = () => {
+    const refreshToken = window.localStorage.getItem(authConfig.storageRefreshTokenKeyName)
+    if (refreshToken) {
+      axios.post(authConfig.logoutEndpoint, { refreshToken }).catch(() => {})
+    }
     setUser(null)
     window.localStorage.removeItem('userData')
     window.localStorage.removeItem(authConfig.storageTokenKeyName)
+    window.localStorage.removeItem(authConfig.storageRefreshTokenKeyName)
     router.push('/login')
   }
 
