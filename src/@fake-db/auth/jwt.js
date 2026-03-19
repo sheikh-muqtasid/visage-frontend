@@ -14,7 +14,7 @@
 //     password: 'admin',
 //     fullName: 'John Doe',
 //     username: 'johndoe',
-//     email: 'admin@vuexy.com'
+//     email: 'admin@visage.com'
 //   },
 //   {
 //     id: 2,
@@ -22,7 +22,7 @@
 //     password: 'client',
 //     fullName: 'Jane Doe',
 //     username: 'janedoe',
-//     email: 'client@vuexy.com'
+//     email: 'client@visage.com'
 //   }
 // ]
 
